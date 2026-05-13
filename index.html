@@ -66,7 +66,7 @@ html, body { height:100%; background:var(--bg); color:var(--text); font-family:-
 .divider { display:flex; align-items:center; gap:10px; padding:0 20px 12px; }
 .divider-line { flex:1; height:1px; background:var(--border); }
 .divider-label { font-size:11px; color:var(--muted); font-weight:700; text-transform:uppercase; letter-spacing:1px; white-space:nowrap; }
-.edit-mode-btn { font-size:11px; font-weight:700; color:var(--accent2); background:color-mix(in srgb, var(--accent) 12%, transparent); border:none; cursor:pointer; padding:4px 10px; border-radius:20px; letter-spacing:.5px; text-transform:uppercase; }
+.reset-btn { font-size:11px; font-weight:700; color:var(--danger); background:rgba(248,113,113,.12); border:none; cursor:pointer; padding:4px 10px; border-radius:20px; letter-spacing:.5px; text-transform:uppercase; }
 
 /* ── Categories ──────────────────────────────── */
 #categories-section { flex:1; overflow-y:auto; overflow-x:hidden; padding:4px 12px 24px; scrollbar-width:none; }
@@ -98,15 +98,12 @@ html, body { height:100%; background:var(--bg); color:var(--text); font-family:-
 .spent-part { color:var(--accent2); font-weight:700; }
 .spent-over { color:var(--danger); font-weight:700; }
 
-/* Delete button */
-.cat-delete { position:absolute; top:0; right:2px; width:20px; height:20px; border-radius:50%; background:var(--danger); color:#fff; font-size:14px; font-weight:700; display:none; align-items:center; justify-content:center; z-index:10; border:none; cursor:pointer; line-height:1; box-shadow:0 2px 6px rgba(0,0,0,.3); }
-.edit-mode .cat-delete { display:flex; }
-
-/* Edit mode wobble */
-.edit-mode .cat-cell:not(.reordering) .cat-circle { animation:wobble .4s infinite alternate ease-in-out; }
-@keyframes wobble { 0% { transform:rotate(-3deg) scale(1); } 100% { transform:rotate(3deg) scale(1.03); } }
-.cat-cell.reordering .cat-circle { animation:none !important; opacity:.2; }
+/* Reorder drag state */
+.cat-cell.reordering .cat-circle { opacity:.2; }
 .cat-cell.reordering .progress-svg { opacity:.2; }
+/* Subtle drag hint on long hover */
+.cat-cell:not(.cat-cell-add) .cat-wrap { cursor: grab; }
+.cat-cell:not(.cat-cell-add) .cat-wrap:active { cursor: grabbing; }
 
 /* Add cell */
 .cat-cell-add .cat-circle { background:transparent; border:2px dashed var(--border); font-size:20px; color:var(--muted); }
@@ -210,7 +207,7 @@ html, body { height:100%; background:var(--bg); color:var(--text); font-family:-
       <div class="divider-line"></div>
       <div class="divider-label">Категории</div>
       <div class="divider-line"></div>
-      <button class="edit-mode-btn" id="editModeBtn">Изменить</button>
+      <button class="reset-btn" id="resetBtn">↺ Сброс</button>
     </div>
   </div>
 
@@ -252,7 +249,7 @@ html, body { height:100%; background:var(--bg); color:var(--text); font-family:-
 
 <!-- CATEGORY -->
 <div class="modal-overlay" id="catModal">
-  <div class="modal">
+  <div class="modal" style="max-height:90dvh;overflow-y:auto;scrollbar-width:none">
     <div class="modal-handle"></div>
     <div class="modal-title" id="catModalTitle">Новая категория</div>
     <div class="field-label">Название</div>
@@ -265,7 +262,18 @@ html, body { height:100%; background:var(--bg); color:var(--text); font-family:-
       <input class="amount-input" id="catBudgetInput" type="number" inputmode="decimal" placeholder="0" min="0" style="font-size:20px">
       <div class="amount-suffix">₸ / мес</div>
     </div>
+    <!-- История (только для существующих) -->
+    <div id="catHistorySection" style="display:none">
+      <div id="catBudgetBarInline"></div>
+      <div class="field-label" style="margin-bottom:8px">История трат</div>
+      <div class="history-list" id="catHistoryList" style="max-height:180px"></div>
+      <div class="history-total" style="margin-bottom:16px">
+        <span>Итого потрачено</span>
+        <strong id="catHistoryTotal" style="color:var(--danger)">0 ₸</strong>
+      </div>
+    </div>
     <div class="modal-actions">
+      <button class="btn-cancel" id="catDeleteBtn" style="display:none;color:var(--danger);border-color:rgba(248,113,113,.3)" onclick="deleteCatFromModal()">Удалить</button>
       <button class="btn-cancel" onclick="closeCatModal()">Отмена</button>
       <button class="btn-confirm" onclick="saveCategory()">Сохранить</button>
     </div>
@@ -296,19 +304,18 @@ html, body { height:100%; background:var(--bg); color:var(--text); font-family:-
   </div>
 </div>
 
-<!-- HISTORY -->
-<div class="modal-overlay" id="historyModal">
+<!-- RESET CONFIRM -->
+<div class="modal-overlay" id="resetModal">
   <div class="modal">
     <div class="modal-handle"></div>
-    <div class="modal-title" id="historyTitle"></div>
-    <div id="historyBudgetBar"></div>
-    <div class="history-list" id="historyList"></div>
-    <div class="history-total">
-      <span>Итого потрачено</span>
-      <strong id="historyTotal">0 ₸</strong>
-    </div>
-    <div class="modal-actions" style="margin-top:14px">
-      <button class="btn-cancel" onclick="closeHistory()" style="flex:1">Закрыть</button>
+    <div class="modal-title">↺ Сброс трат</div>
+    <p style="font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:20px">
+      Все траты и история будут обнулены.<br>
+      <span style="color:var(--text)">Балансы карт и планы бюджета сохранятся.</span>
+    </p>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="document.getElementById('resetModal').classList.remove('open')">Отмена</button>
+      <button class="btn-confirm" style="background:linear-gradient(135deg,#ef4444,#f87171);box-shadow:0 4px 16px rgba(239,68,68,.35)" onclick="confirmReset()">Сбросить</button>
     </div>
   </div>
 </div>
@@ -444,23 +451,23 @@ function closeTheme() { document.getElementById('themeModal').classList.remove('
 // DATA
 // ════════════════════════════════════════════
 let cards = [
-  { id:'c1', name:'Kaspi',    balance:345200, emoji:'💳', color:'#d32f2f' },
-  { id:'c2', name:'Halyk',    balance:280750, emoji:'🏦', color:'#2e7d32' },
-  { id:'c3', name:'Наличные', balance:70000,  emoji:'💵', color:'#455a64' },
+  { id:'c1', name:'Kaspi',    balance:0, emoji:'💳', color:'#d32f2f' },
+  { id:'c2', name:'Halyk',    balance:0, emoji:'🏦', color:'#2e7d32' },
+  { id:'c3', name:'Наличные', balance:0, emoji:'💵', color:'#455a64' },
 ];
 let categories = [
-  { id:'cat1',  name:'Продукты',    emoji:'🛒', spent:0, budget:80000,  history:[] },
-  { id:'cat2',  name:'Транспорт',   emoji:'🚌', spent:0, budget:30000,  history:[] },
-  { id:'cat3',  name:'Кафе',        emoji:'☕', spent:0, budget:25000,  history:[] },
-  { id:'cat4',  name:'Развлечения', emoji:'🎬', spent:0, budget:20000,  history:[] },
-  { id:'cat5',  name:'Одежда',      emoji:'👗', spent:0, budget:null,   history:[] },
-  { id:'cat6',  name:'Здоровье',    emoji:'💊', spent:0, budget:15000,  history:[] },
-  { id:'cat7',  name:'Связь',       emoji:'📱', spent:0, budget:5000,   history:[] },
-  { id:'cat8',  name:'Коммуналка',  emoji:'🏠', spent:0, budget:40000,  history:[] },
-  { id:'cat9',  name:'Образование', emoji:'📚', spent:0, budget:null,   history:[] },
-  { id:'cat10', name:'Путешествия', emoji:'✈️', spent:0, budget:null,   history:[] },
-  { id:'cat11', name:'Спорт',       emoji:'🏋️', spent:0, budget:10000,  history:[] },
-  { id:'cat12', name:'Подарки',     emoji:'🎁', spent:0, budget:null,   history:[] },
+  { id:'cat1',  name:'Продукты',    emoji:'🛒', spent:0, budget:null, history:[] },
+  { id:'cat2',  name:'Транспорт',   emoji:'🚌', spent:0, budget:null, history:[] },
+  { id:'cat3',  name:'Кафе',        emoji:'☕', spent:0, budget:null, history:[] },
+  { id:'cat4',  name:'Развлечения', emoji:'🎬', spent:0, budget:null, history:[] },
+  { id:'cat5',  name:'Одежда',      emoji:'👗', spent:0, budget:null, history:[] },
+  { id:'cat6',  name:'Здоровье',    emoji:'💊', spent:0, budget:null, history:[] },
+  { id:'cat7',  name:'Связь',       emoji:'📱', spent:0, budget:null, history:[] },
+  { id:'cat8',  name:'Коммуналка',  emoji:'🏠', spent:0, budget:null, history:[] },
+  { id:'cat9',  name:'Образование', emoji:'📚', spent:0, budget:null, history:[] },
+  { id:'cat10', name:'Путешествия', emoji:'✈️', spent:0, budget:null, history:[] },
+  { id:'cat11', name:'Спорт',       emoji:'🏋️', spent:0, budget:null, history:[] },
+  { id:'cat12', name:'Подарки',     emoji:'🎁', spent:0, budget:null, history:[] },
 ];
 
 const EMOJIS = ['🛒','🚌','☕','🎬','👗','💊','📱','🏠','📚','✈️','🏋️','🎁',
@@ -474,7 +481,6 @@ const CARD_EMOJIS = ['💳','🏦','💵','💴','💶','💷','🪙','💰','�
 // STATE
 // ════════════════════════════════════════════
 let selectedCard  = null;
-let editMode      = false;
 let pendingCat    = null;
 let pendingCard   = null;
 let editCatId     = null;
@@ -566,7 +572,7 @@ const RING_CIRC = 2 * Math.PI * RING_R; // ≈ 150.8
 function renderCategories() {
   const grid = document.getElementById('catGrid');
   grid.innerHTML = '';
-  grid.className = 'cat-grid' + (editMode ? ' edit-mode' : '');
+  grid.className = 'cat-grid';
 
   categories.forEach(cat => {
     const cell = document.createElement('div');
@@ -637,27 +643,19 @@ function renderCategories() {
         <div class="cat-circle">${cat.emoji}</div>
       </div>
       <div class="cat-name">${cat.name}</div>
-      ${labelHtml}
-      <button class="cat-delete">×</button>`;
+      ${labelHtml}`;
 
-    cell.querySelector('.cat-delete').addEventListener('click', e => {
-      e.stopPropagation(); deleteCategory(cat.id);
+    // Reorder всегда активен — через drag на кружке
+    cell.querySelector('.cat-wrap').addEventListener('pointerdown', e => {
+      startReorder(e, cell);
     });
-
-    if (editMode) {
-      cell.querySelector('.cat-wrap').addEventListener('pointerdown', e => {
-        e.stopPropagation(); startReorder(e, cell);
-      });
-    }
 
     cell.addEventListener('mouseenter', () => { if (isDragging) cell.classList.add('drop-over'); });
     cell.addEventListener('mouseleave', () => cell.classList.remove('drop-over'));
 
     cell.addEventListener('click', e => {
-      if (e.target.closest('.cat-delete')) return;
-      if (editMode)     { openCatModal(cat.id); return; }
       if (selectedCard) { openSpend(cat, selectedCard); }
-      else              { openHistory(cat); }
+      else              { openCatModal(cat.id); }
     });
 
     grid.appendChild(cell);
@@ -815,13 +813,64 @@ function confirmSpend() {
 function openCatModal(id) {
   editCatId = id;
   const cat = id ? categories.find(c => c.id === id) : null;
-  document.getElementById('catModalTitle').textContent = cat ? `Изменить: ${cat.name}` : 'Новая категория';
+  const isNew = !cat;
+
+  document.getElementById('catModalTitle').textContent = isNew ? 'Новая категория' : cat.name;
   document.getElementById('catNameInput').value   = cat?.name   ?? '';
   document.getElementById('catBudgetInput').value = cat?.budget ?? '';
   selectedEmoji = cat?.emoji ?? EMOJIS[0];
   renderEmojiGrid();
+
+  // Кнопка удаления — только для существующих
+  document.getElementById('catDeleteBtn').style.display = isNew ? 'none' : 'block';
+
+  // История и прогресс — только для существующих
+  const histSection = document.getElementById('catHistorySection');
+  if (!isNew) {
+    histSection.style.display = 'block';
+
+    // Budget bar
+    const bar = document.getElementById('catBudgetBarInline');
+    if (cat.budget && cat.budget > 0) {
+      const pct = Math.min(100, cat.spent / cat.budget * 100);
+      const rc  = ringColor(pct);
+      bar.innerHTML = `<div class="budget-bar-wrap" style="margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted)">
+          <span>Прогресс</span><span style="color:${rc};font-weight:700">${pct.toFixed(0)}%</span>
+        </div>
+        <div class="budget-bar-track"><div class="budget-bar-fill" style="width:${pct.toFixed(1)}%;background:${rc}"></div></div>
+        <div class="budget-bar-label">
+          <span>Потрачено: <strong>${fmt(cat.spent)}</strong></span>
+          <span>План: <strong>${fmt(cat.budget)}</strong></span>
+        </div>
+      </div>`;
+    } else { bar.innerHTML = ''; }
+
+    // History list
+    const list = document.getElementById('catHistoryList');
+    list.innerHTML = !cat.history.length
+      ? '<div class="history-empty">Нет трат в этой категории</div>'
+      : cat.history.map(h => `
+          <div class="history-item">
+            <div class="history-info">
+              <div class="history-comment">${h.comment || '—'}</div>
+              <div class="history-from">С «${h.from}» · ${fmtDate(h.date)}</div>
+            </div>
+            <div class="history-amount">−${fmt(h.amount)}</div>
+          </div>`).join('');
+    document.getElementById('catHistoryTotal').textContent = fmt(cat.spent);
+  } else {
+    histSection.style.display = 'none';
+  }
+
   document.getElementById('catModal').classList.add('open');
   setTimeout(() => document.getElementById('catNameInput').focus(), 300);
+}
+
+function deleteCatFromModal() {
+  if (!editCatId) return;
+  deleteCategory(editCatId);
+  closeCatModal();
 }
 function closeCatModal() { document.getElementById('catModal').classList.remove('open'); editCatId = null; }
 function renderEmojiGrid() {
@@ -904,47 +953,21 @@ function saveCard() {
 }
 document.getElementById('addCardBtn').addEventListener('click', () => openCardModal(null));
 
-// ════════════════════════════════════════════
-// HISTORY MODAL
-// ════════════════════════════════════════════
-function openHistory(cat) {
-  document.getElementById('historyTitle').innerHTML = `${cat.emoji} ${cat.name}`;
-  const bar = document.getElementById('historyBudgetBar');
-  if (cat.budget && cat.budget > 0) {
-    const pct = Math.min(100, cat.spent/cat.budget*100);
-    const rc  = ringColor(pct);
-    bar.innerHTML = `<div class="budget-bar-wrap">
-      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted)">
-        <span>Прогресс бюджета</span><span style="color:${rc};font-weight:700">${pct.toFixed(0)}%</span>
-      </div>
-      <div class="budget-bar-track"><div class="budget-bar-fill" style="width:${pct.toFixed(1)}%;background:${rc}"></div></div>
-      <div class="budget-bar-label"><span>Потрачено: <strong>${fmt(cat.spent)}</strong></span><span>План: <strong>${fmt(cat.budget)}</strong></span></div>
-    </div>`;
-  } else { bar.innerHTML = ''; }
-  const list = document.getElementById('historyList');
-  list.innerHTML = !cat.history.length
-    ? '<div class="history-empty">Нет трат в этой категории</div>'
-    : cat.history.map(h => `
-        <div class="history-item">
-          <div class="history-info">
-            <div class="history-comment">${h.comment||'—'}</div>
-            <div class="history-from">С «${h.from}» · ${fmtDate(h.date)}</div>
-          </div>
-          <div class="history-amount">−${fmt(h.amount)}</div>
-        </div>`).join('');
-  document.getElementById('historyTotal').textContent = fmt(cat.spent);
-  document.getElementById('historyModal').classList.add('open');
-}
-function closeHistory() { document.getElementById('historyModal').classList.remove('open'); }
 
 // ════════════════════════════════════════════
-// EDIT MODE
+// RESET SPENDING
 // ════════════════════════════════════════════
-document.getElementById('editModeBtn').addEventListener('click', () => {
-  editMode = !editMode;
-  document.getElementById('editModeBtn').textContent = editMode ? 'Готово' : 'Изменить';
-  renderCategories();
+document.getElementById('resetBtn').addEventListener('click', () => {
+  document.getElementById('resetModal').classList.add('open');
 });
+
+function confirmReset() {
+  categories.forEach(cat => { cat.spent = 0; cat.history = []; });
+  saveData();
+  renderCategories();
+  document.getElementById('resetModal').classList.remove('open');
+  showToast('✓ Все траты обнулены');
+}
 
 // Close modals on overlay click
 document.querySelectorAll('.modal-overlay').forEach(o => {
