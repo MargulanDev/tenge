@@ -47,7 +47,7 @@ html, body { height:100%; background:var(--bg); color:var(--text); font-family:-
 /* Cards */
 .cards-row { display:flex; gap:12px; padding:0 20px 16px; overflow-x:auto; scrollbar-width:none; }
 .cards-row::-webkit-scrollbar { display:none; }
-.balance-card { flex-shrink:0; width:150px; border-radius:18px; padding:14px 16px; cursor:pointer; border:2px solid transparent; transition:border-color .15s, transform .15s; position:relative; overflow:hidden; }
+.balance-card { flex-shrink:0; width:150px; border-radius:18px; padding:14px 16px; cursor:pointer; border:2px solid transparent; transition:border-color .15s, transform .15s; position:relative; overflow:hidden; touch-action:none; }
 .balance-card::before { content:''; position:absolute; top:-20px; right:-20px; width:80px; height:80px; border-radius:50%; background:rgba(255,255,255,.06); }
 .balance-card.selected { transform:translateY(-2px); }
 .card-bank { font-size:10px; font-weight:700; color:rgba(255,255,255,.55); letter-spacing:1px; text-transform:uppercase; margin-bottom:6px; }
@@ -102,7 +102,7 @@ html, body { height:100%; background:var(--bg); color:var(--text); font-family:-
 .cat-cell.reordering .cat-circle { opacity:.2; }
 .cat-cell.reordering .progress-svg { opacity:.2; }
 /* Subtle drag hint on long hover */
-.cat-cell:not(.cat-cell-add) .cat-wrap { cursor: grab; }
+.cat-cell:not(.cat-cell-add) .cat-wrap { cursor: grab; touch-action: none; }
 .cat-cell:not(.cat-cell-add) .cat-wrap:active { cursor: grabbing; }
 
 /* Add cell */
@@ -549,8 +549,7 @@ function renderCards() {
       selectedCard = selectedCard?.id === card.id ? null : card;
       renderCards(); updateDragTip();
     });
-    el.addEventListener('mousedown', e => { if (!e.target.closest('.card-edit-btn')) startSpendDrag(e, card); });
-    el.addEventListener('touchstart', e => { if (!e.target.closest('.card-edit-btn')) startSpendDrag(e, card); }, { passive:true });
+    el.addEventListener('pointerdown', e => { if (!e.target.closest('.card-edit-btn')) { e.preventDefault(); startSpendDrag(e, card); } });
     row.insertBefore(el, addBtn);
   });
   document.getElementById('totalBadge').textContent = fmt(totalBalance());
@@ -676,6 +675,7 @@ function renderCategories() {
 // REORDER
 // ════════════════════════════════════════════
 function startReorder(e, cell) {
+  e.preventDefault();
   const startX = e.clientX, startY = e.clientY;
   let moved = false, currentSwap = null;
   const cat = categories.find(c => c.id === cell.dataset.id);
@@ -731,21 +731,18 @@ function startReorder(e, cell) {
 function startSpendDrag(e, card) {
   dragCard = card; selectedCard = card; isDragging = false;
   renderCards();
-  const cx = e.clientX ?? e.touches?.[0]?.clientX ?? 0;
-  const cy = e.clientY ?? e.touches?.[0]?.clientY ?? 0;
+  const cx = e.clientX, cy = e.clientY;
   ghostEl.style.display = 'flex';
   ghostEl.innerHTML = `${card.emoji}&nbsp;${card.name}&nbsp;<span style="color:var(--accent2)">${Math.round(card.balance).toLocaleString('ru-RU')} ₸</span>`;
   ghostEl.style.left = (cx-40)+'px'; ghostEl.style.top = (cy-20)+'px';
-  document.addEventListener('mousemove', onSpendMove);
-  document.addEventListener('mouseup',   onSpendEnd);
-  document.addEventListener('touchmove', onSpendMove, { passive:false });
-  document.addEventListener('touchend',  onSpendEnd);
+  document.addEventListener('pointermove', onSpendMove);
+  document.addEventListener('pointerup',   onSpendEnd);
+  document.addEventListener('pointercancel', onSpendEnd);
 }
 function onSpendMove(e) {
-  e.preventDefault?.();
+  e.preventDefault();
   isDragging = true;
-  const cx = e.clientX ?? e.touches?.[0]?.clientX ?? 0;
-  const cy = e.clientY ?? e.touches?.[0]?.clientY ?? 0;
+  const cx = e.clientX, cy = e.clientY;
   ghostEl.style.left = (cx-40)+'px'; ghostEl.style.top = (cy-20)+'px';
   document.querySelectorAll('.cat-cell:not(.cat-cell-add)').forEach(cell => {
     const r = cell.getBoundingClientRect();
@@ -753,8 +750,7 @@ function onSpendMove(e) {
   });
 }
 function onSpendEnd(e) {
-  const cx = e.clientX ?? e.changedTouches?.[0]?.clientX ?? 0;
-  const cy = e.clientY ?? e.changedTouches?.[0]?.clientY ?? 0;
+  const cx = e.clientX, cy = e.clientY;
   ghostEl.style.display = 'none';
   document.querySelectorAll('.cat-cell').forEach(c => c.classList.remove('drop-over'));
   if (isDragging) {
@@ -767,10 +763,9 @@ function onSpendEnd(e) {
     });
   }
   isDragging = false; dragCard = null;
-  document.removeEventListener('mousemove', onSpendMove);
-  document.removeEventListener('mouseup',   onSpendEnd);
-  document.removeEventListener('touchmove', onSpendMove);
-  document.removeEventListener('touchend',  onSpendEnd);
+  document.removeEventListener('pointermove', onSpendMove);
+  document.removeEventListener('pointerup',   onSpendEnd);
+  document.removeEventListener('pointercancel', onSpendEnd);
 }
 
 // ════════════════════════════════════════════
