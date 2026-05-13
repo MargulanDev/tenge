@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CoinKeeper — Дизайн</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0f0f17;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    gap: 48px;
+    padding: 40px 24px;
+    flex-wrap: wrap;
+  }
+
+  /* ── Phone frame ── */
+  .phone-frame {
+    width: 390px;
+    height: 844px;
+    background: #13131f;
+    border-radius: 50px;
+    box-shadow:
+      0 0 0 12px #1c1c2e,
+      0 0 0 14px #2a2a40,
+      0 40px 120px rgba(0,0,0,.8);
+    overflow: hidden;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .phone-notch {
+    position: absolute;
+    top: 0; left: 50%; transform: translateX(-50%);
+    width: 126px; height: 34px;
+    background: #1c1c2e;
+    border-radius: 0 0 22px 22px;
+    z-index: 100;
+  }
+
+  /* ── Screen ── */
+  .screen {
+    width: 100%; height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+  }
+  .screen::-webkit-scrollbar { display: none; }
+
+  /* ── Status bar ── */
+  .status-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 52px 28px 8px;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .3px;
+  }
+  .status-icons { display: flex; gap: 6px; align-items: center; }
+  .status-icons svg { width: 16px; height: 16px; fill: #fff; }
+
+  /* ── Header ── */
+  .header {
+    padding: 8px 24px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .header-left h2 {
+    font-size: 13px;
+    color: #7b7b9d;
+    font-weight: 500;
+    margin-bottom: 2px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .header-left .total {
+    font-size: 30px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -1px;
+  }
+  .header-left .total span { color: #a78bfa; font-size: 20px; }
+  .avatar {
+    width: 40px; height: 40px;
+    background: linear-gradient(135deg, #7c3aed, #a78bfa);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 700; color: #fff;
+  }
+
+  /* ── Cards carousel ── */
+  .section-title {
+    padding: 20px 24px 12px;
+    font-size: 13px;
+    color: #7b7b9d;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .section-title a {
+    font-size: 12px;
+    color: #a78bfa;
+    text-decoration: none;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  .cards-scroll {
+    display: flex;
+    gap: 16px;
+    padding: 0 24px 4px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .cards-scroll::-webkit-scrollbar { display: none; }
+
+  .card {
+    min-width: 220px;
+    height: 128px;
+    border-radius: 20px;
+    padding: 18px 20px;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform .2s;
+    flex-shrink: 0;
+  }
+  .card:hover { transform: translateY(-3px); }
+
+  .card-kaspi { background: linear-gradient(135deg, #d32f2f 0%, #f44336 60%, #ff7043 100%); }
+  .card-halyk { background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 60%, #43a047 100%); }
+  .card-freedom { background: linear-gradient(135deg, #0d47a1 0%, #1565c0 60%, #1976d2 100%); }
+  .card-cash { background: linear-gradient(135deg, #37474f 0%, #546e7a 60%, #607d8b 100%); }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: -30px; right: -30px;
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.1);
+  }
+  .card::after {
+    content: '';
+    position: absolute;
+    bottom: -20px; left: 20px;
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    background: rgba(255,255,255,.06);
+  }
+
+  .card-bank {
+    font-size: 11px;
+    font-weight: 700;
+    color: rgba(255,255,255,.7);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .card-balance {
+    font-size: 22px;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -.5px;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .card-currency {
+    font-size: 12px;
+    color: rgba(255,255,255,.6);
+    font-weight: 500;
+  }
+  .card-dots {
+    position: absolute;
+    bottom: 18px; right: 20px;
+    display: flex; gap: 4px;
+  }
+  .card-dots span {
+    width: 6px; height: 6px;
+    background: rgba(255,255,255,.4);
+    border-radius: 50%;
+  }
+  .card-dots span:last-child { background: rgba(255,255,255,.8); }
+
+  .add-card {
+    min-width: 100px;
+    height: 128px;
+    border-radius: 20px;
+    border: 2px dashed #2e2e4a;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: border-color .2s;
+  }
+  .add-card:hover { border-color: #7c3aed; }
+  .add-card svg { width: 24px; height: 24px; fill: #4a4a6a; }
+  .add-card span { font-size: 11px; color: #4a4a6a; }
+
+  /* ── Nav tabs ── */
+  .nav-tabs {
+    display: flex;
+    gap: 8px;
+    padding: 16px 24px 0;
+  }
+  .tab {
+    padding: 7px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+    border: none;
+    color: #7b7b9d;
+    background: transparent;
+  }
+  .tab.active {
+    background: #7c3aed;
+    color: #fff;
+  }
+  .tab:not(.active):hover {
+    background: #1e1e30;
+    color: #aaa;
+  }
+
+  /* ── Budget plans ── */
+  .plans-section { padding: 16px 24px; }
+
+  .month-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .month-nav {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .month-nav button {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    border: none;
+    background: #1e1e30;
+    color: #7b7b9d;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    transition: background .2s;
+  }
+  .month-nav button:hover { background: #2a2a40; color: #fff; }
+  .month-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+  }
+  .month-total {
+    font-size: 13px;
+    color: #7b7b9d;
+  }
+  .month-total strong { color: #a78bfa; }
+
+  /* Category card */
+  .category-card {
+    background: #1a1a2e;
+    border-radius: 16px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    border: 2px solid transparent;
+    transition: border-color .2s, background .2s, transform .15s;
+    cursor: default;
+    position: relative;
+  }
+  .category-card.drop-target {
+    border-color: #7c3aed;
+    background: #1f1a35;
+    transform: scale(1.01);
+  }
+  .category-card.drop-over {
+    border-color: #a78bfa;
+    background: #22183a;
+    animation: pulse-border .4s ease;
+  }
+
+  @keyframes pulse-border {
+    0% { border-color: #7c3aed; }
+    50% { border-color: #c4b5fd; }
+    100% { border-color: #a78bfa; }
+  }
+
+  .cat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .cat-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .cat-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .cat-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #e0e0f0;
+  }
+  .cat-sub {
+    font-size: 11px;
+    color: #7b7b9d;
+    margin-top: 1px;
+  }
+  .cat-amounts {
+    text-align: right;
+  }
+  .cat-spent {
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+  }
+  .cat-limit {
+    font-size: 11px;
+    color: #7b7b9d;
+  }
+
+  .progress-bar {
+    height: 5px;
+    background: #2a2a40;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    border-radius: 10px;
+    transition: width .4s ease;
+  }
+
+  /* Drop indicator */
+  .drop-badge {
+    position: absolute;
+    top: 10px; right: 10px;
+    background: #7c3aed;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 20px;
+    opacity: 0;
+    transition: opacity .2s;
+    pointer-events: none;
+  }
+  .category-card.drop-over .drop-badge { opacity: 1; }
+
+  /* ── Transactions ── */
+  .transactions-section { padding: 0 24px 24px; }
+
+  .txn-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .txn-item {
+    background: #1a1a2e;
+    border-radius: 14px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: grab;
+    position: relative;
+    user-select: none;
+    transition: transform .15s, box-shadow .15s, opacity .15s;
+    border: 1.5px solid transparent;
+  }
+  .txn-item:active { cursor: grabbing; }
+  .txn-item.dragging {
+    opacity: .5;
+    transform: scale(.97);
+    box-shadow: none !important;
+    border-color: transparent !important;
+  }
+  .txn-item.assigned {
+    opacity: .5;
+    pointer-events: none;
+  }
+
+  .txn-drag-handle {
+    color: #3a3a5a;
+    font-size: 16px;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+  .txn-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px;
+    flex-shrink: 0;
+  }
+  .txn-info { flex: 1; min-width: 0; }
+  .txn-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #e0e0f0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .txn-date {
+    font-size: 11px;
+    color: #7b7b9d;
+    margin-top: 1px;
+  }
+  .txn-amount {
+    font-size: 14px;
+    font-weight: 700;
+    color: #ff6b8a;
+    flex-shrink: 0;
+  }
+  .txn-cat-badge {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+    flex-shrink: 0;
+    display: none;
+  }
+  .txn-item.assigned .txn-cat-badge { display: block; }
+
+  /* Drag hint */
+  .drag-hint {
+    text-align: center;
+    font-size: 12px;
+    color: #4a4a6a;
+    padding: 8px 0 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .drag-hint svg { width: 14px; height: 14px; fill: #4a4a6a; }
+
+  /* ── Ghost drag clone ── */
+  #drag-ghost {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: .92;
+    transform: rotate(2deg) scale(1.03);
+    box-shadow: 0 12px 40px rgba(124,58,237,.4);
+    border-radius: 14px;
+    border: 1.5px solid #7c3aed;
+    background: #1f1933;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 280px;
+    transition: none;
+  }
+
+  /* ── Bottom nav ── */
+  .bottom-nav {
+    position: sticky;
+    bottom: 0;
+    background: linear-gradient(to top, #13131f 80%, transparent);
+    padding: 12px 32px 28px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    z-index: 50;
+  }
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    opacity: .4;
+    transition: opacity .2s;
+  }
+  .nav-item.active { opacity: 1; }
+  .nav-item svg { width: 24px; height: 24px; }
+  .nav-item span { font-size: 10px; color: #7b7b9d; font-weight: 600; letter-spacing: .3px; }
+  .nav-item.active span { color: #a78bfa; }
+  .nav-item.active svg path, .nav-item.active svg rect, .nav-item.active svg circle { fill: #a78bfa; }
+
+  .nav-add {
+    width: 52px; height: 52px;
+    background: linear-gradient(135deg, #7c3aed, #a78bfa);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 20px rgba(124,58,237,.5);
+    cursor: pointer;
+    margin-top: -8px;
+  }
+  .nav-add svg { width: 24px; height: 24px; fill: #fff; }
+
+  /* ── Toast ── */
+  #toast {
+    position: fixed;
+    bottom: 110px;
+    left: 50%; transform: translateX(-50%);
+    background: #7c3aed;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    z-index: 9999;
+    opacity: 0;
+    transition: opacity .3s;
+    pointer-events: none;
+    white-space: nowrap;
+    box-shadow: 0 4px 20px rgba(124,58,237,.5);
+  }
+  #toast.show { opacity: 1; }
+
+  /* ── Right panel: design annotations ── */
+  .annotations {
+    width: 340px;
+    flex-shrink: 0;
+  }
+  .anno-title {
+    font-size: 22px;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 6px;
+    letter-spacing: -.5px;
+  }
+  .anno-sub {
+    font-size: 14px;
+    color: #7b7b9d;
+    margin-bottom: 28px;
+    line-height: 1.5;
+  }
+  .anno-section {
+    margin-bottom: 24px;
+  }
+  .anno-section h3 {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #7b7b9d;
+    margin-bottom: 12px;
+    font-weight: 700;
+  }
+  .anno-item {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    margin-bottom: 12px;
+  }
+  .anno-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #a78bfa;
+    margin-top: 5px;
+    flex-shrink: 0;
+  }
+  .anno-item p {
+    font-size: 13px;
+    color: #c0c0e0;
+    line-height: 1.5;
+  }
+  .anno-item strong { color: #fff; }
+
+  .color-chips {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #1a1a2e;
+    padding: 6px 12px;
+    border-radius: 20px;
+  }
+  .chip-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .chip span { font-size: 11px; color: #c0c0e0; font-weight: 600; }
+
+  .screen-label {
+    display: inline-block;
+    background: #1e1e30;
+    border: 1px solid #2a2a40;
+    color: #a78bfa;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 20px;
+    letter-spacing: .5px;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+  }
+
+  .interaction-card {
+    background: #1a1a2e;
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    display: flex;
+    gap: 12px;
+  }
+  .int-num {
+    width: 24px; height: 24px;
+    background: #7c3aed;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    font-weight: 800;
+    color: #fff;
+    flex-shrink: 0;
+  }
+  .int-text { flex: 1; }
+  .int-text h4 { font-size: 13px; font-weight: 700; color: #e0e0f0; margin-bottom: 3px; }
+  .int-text p { font-size: 12px; color: #7b7b9d; line-height: 1.4; }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════ PHONE ══════════════════════════════════ -->
+<div class="phone-frame">
+  <div class="phone-notch"></div>
+  <div class="screen" id="screen">
+
+    <!-- Status bar -->
+    <div class="status-bar">
+      <span>9:41</span>
+      <div class="status-icons">
+        <!-- Signal -->
+        <svg viewBox="0 0 24 24"><rect x="1" y="15" width="3" height="6"/><rect x="6" y="11" width="3" height="10"/><rect x="11" y="7" width="3" height="14"/><rect x="16" y="3" width="3" height="18" opacity=".3"/></svg>
+        <!-- WiFi -->
+        <svg viewBox="0 0 24 24"><path d="M5 12.5C7.1 10.4 9.9 9 13 9s5.9 1.4 8 3.5M1 9C4.1 5.9 8.3 4 13 4s8.9 1.9 12 5M9 16c1.1-1.1 2.6-1.8 4.2-1.8s3.1.7 4.2 1.8M13 20h.01" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+        <!-- Battery -->
+        <svg viewBox="0 0 24 24"><rect x="2" y="7" width="18" height="11" rx="2" stroke="#fff" stroke-width="1.5" fill="none"/><rect x="3" y="8" width="13" height="9" rx="1" fill="#fff"/><path d="M20 10v5" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
+    </div>
+
+    <!-- Header -->
+    <div class="header">
+      <div class="header-left">
+        <h2>Общий баланс</h2>
+        <div class="total" id="totalBalance">820 450 <span>₸</span></div>
+      </div>
+      <div class="avatar">М</div>
+    </div>
+
+    <!-- Cards section -->
+    <div class="section-title">
+      Мои карты
+      <a href="#">Управление</a>
+    </div>
+
+    <div class="cards-scroll" id="cardsScroll">
+      <div class="card card-kaspi" data-balance="345200">
+        <div class="card-bank">Kaspi Bank</div>
+        <div class="card-balance" id="card-kaspi">345 200</div>
+        <div class="card-currency">тенге</div>
+        <div class="card-dots"><span></span><span></span><span></span></div>
+      </div>
+      <div class="card card-halyk" data-balance="280750">
+        <div class="card-bank">Halyk Bank</div>
+        <div class="card-balance" id="card-halyk">280 750</div>
+        <div class="card-currency">тенге</div>
+        <div class="card-dots"><span></span><span></span><span></span></div>
+      </div>
+      <div class="card card-freedom" data-balance="124500">
+        <div class="card-bank">Freedom Bank</div>
+        <div class="card-balance" id="card-freedom">124 500</div>
+        <div class="card-currency">тенге</div>
+        <div class="card-dots"><span></span><span></span><span></span></div>
+      </div>
+      <div class="card card-cash" data-balance="70000">
+        <div class="card-bank">Наличные</div>
+        <div class="card-balance" id="card-cash">70 000</div>
+        <div class="card-currency">тенге</div>
+        <div class="card-dots"><span></span><span></span><span></span></div>
+      </div>
+      <div class="add-card" id="addCardBtn">
+        <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+        <span>Добавить</span>
+      </div>
+    </div>
+
+    <!-- Nav tabs -->
+    <div class="nav-tabs">
+      <button class="tab" onclick="showSection('txn')">Транзакции</button>
+      <button class="tab active" onclick="showSection('plans')">Планы</button>
+      <button class="tab" onclick="showSection('stats')">Статистика</button>
+    </div>
+
+    <!-- Plans section -->
+    <div class="plans-section" id="plansSection">
+      <div class="month-header">
+        <div class="month-nav">
+          <button onclick="changeMonth(-1)">‹</button>
+          <div class="month-name" id="monthName">Май 2026</div>
+          <button onclick="changeMonth(1)">›</button>
+        </div>
+        <div class="month-total">
+          Потрачено: <strong id="spentTotal">97 800 ₸</strong>
+        </div>
+      </div>
+
+      <!-- Category cards -->
+      <div id="categoriesContainer">
+
+        <div class="category-card" data-cat="food" data-limit="80000" data-spent="52300">
+          <div class="drop-badge">+ Сюда</div>
+          <div class="cat-row">
+            <div class="cat-left">
+              <div class="cat-icon" style="background:#1f2d1a;">🥗</div>
+              <div>
+                <div class="cat-name">Продукты</div>
+                <div class="cat-sub">6 операций</div>
+              </div>
+            </div>
+            <div class="cat-amounts">
+              <div class="cat-spent" id="spent-food">52 300 ₸</div>
+              <div class="cat-limit">из 80 000 ₸</div>
+            </div>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="fill-food" style="width:65%;background:linear-gradient(90deg,#4ade80,#22c55e);"></div>
+          </div>
+        </div>
+
+        <div class="category-card" data-cat="transport" data-limit="30000" data-spent="18500">
+          <div class="drop-badge">+ Сюда</div>
+          <div class="cat-row">
+            <div class="cat-left">
+              <div class="cat-icon" style="background:#1a1f2d;">🚌</div>
+              <div>
+                <div class="cat-name">Транспорт</div>
+                <div class="cat-sub">4 операции</div>
+              </div>
+            </div>
+            <div class="cat-amounts">
+              <div class="cat-spent" id="spent-transport">18 500 ₸</div>
+              <div class="cat-limit">из 30 000 ₸</div>
+            </div>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="fill-transport" style="width:62%;background:linear-gradient(90deg,#60a5fa,#3b82f6);"></div>
+          </div>
+        </div>
+
+        <div class="category-card" data-cat="cafe" data-limit="25000" data-spent="21000">
+          <div class="drop-badge">+ Сюда</div>
+          <div class="cat-row">
+            <div class="cat-left">
+              <div class="cat-icon" style="background:#2d1a1a;">☕</div>
+              <div>
+                <div class="cat-name">Кафе и рестораны</div>
+                <div class="cat-sub">3 операции</div>
+              </div>
+            </div>
+            <div class="cat-amounts">
+              <div class="cat-spent" id="spent-cafe">21 000 ₸</div>
+              <div class="cat-limit">из 25 000 ₸</div>
+            </div>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="fill-cafe" style="width:84%;background:linear-gradient(90deg,#fbbf24,#f59e0b);"></div>
+          </div>
+        </div>
+
+        <div class="category-card" data-cat="entertainment" data-limit="20000" data-spent="6000">
+          <div class="drop-badge">+ Сюда</div>
+          <div class="cat-row">
+            <div class="cat-left">
+              <div class="cat-icon" style="background:#1f1a2d;">🎬</div>
+              <div>
+                <div class="cat-name">Развлечения</div>
+                <div class="cat-sub">1 операция</div>
+              </div>
+            </div>
+            <div class="cat-amounts">
+              <div class="cat-spent" id="spent-entertainment">6 000 ₸</div>
+              <div class="cat-limit">из 20 000 ₸</div>
+            </div>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="fill-entertainment" style="width:30%;background:linear-gradient(90deg,#c084fc,#a855f7);"></div>
+          </div>
+        </div>
+
+        <div class="category-card" data-cat="health" data-limit="15000" data-spent="0">
+          <div class="drop-badge">+ Сюда</div>
+          <div class="cat-row">
+            <div class="cat-left">
+              <div class="cat-icon" style="background:#1a2d25;">💊</div>
+              <div>
+                <div class="cat-name">Здоровье</div>
+                <div class="cat-sub">0 операций</div>
+              </div>
+            </div>
+            <div class="cat-amounts">
+              <div class="cat-spent" id="spent-health">0 ₸</div>
+              <div class="cat-limit">из 15 000 ₸</div>
+            </div>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="fill-health" style="width:0%;background:linear-gradient(90deg,#34d399,#10b981);"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Unassigned Transactions -->
+    <div class="transactions-section">
+      <div class="section-title" style="padding:0 0 4px;">
+        Нераспределённые
+        <a href="#">Все →</a>
+      </div>
+
+      <div class="drag-hint">
+        <svg viewBox="0 0 24 24"><path d="M9 11l3-8 3 8M6 8l-4 4 4 4M18 8l4 4-4 4M6.5 12H18"/></svg>
+        Перетащи трату на категорию выше
+      </div>
+
+      <div class="txn-list" id="txnList">
+
+        <div class="txn-item" data-amount="5500" data-cat-color="#4ade80" data-id="t1">
+          <div class="txn-drag-handle">⋮⋮</div>
+          <div class="txn-icon" style="background:#1f2d1a;">🛒</div>
+          <div class="txn-info">
+            <div class="txn-name">Magnum / Супермаркет</div>
+            <div class="txn-date">Сегодня, 14:32</div>
+          </div>
+          <div class="txn-amount">-5 500 ₸</div>
+          <div class="txn-cat-badge" style="background:#1f2d1a;color:#4ade80;">Продукты</div>
+        </div>
+
+        <div class="txn-item" data-amount="2800" data-cat-color="#60a5fa" data-id="t2">
+          <div class="txn-drag-handle">⋮⋮</div>
+          <div class="txn-icon" style="background:#1a1f2d;">🚕</div>
+          <div class="txn-info">
+            <div class="txn-name">inDrive</div>
+            <div class="txn-date">Сегодня, 12:10</div>
+          </div>
+          <div class="txn-amount">-2 800 ₸</div>
+          <div class="txn-cat-badge" style="background:#1a1f2d;color:#60a5fa;">Транспорт</div>
+        </div>
+
+        <div class="txn-item" data-amount="8900" data-cat-color="#fbbf24" data-id="t3">
+          <div class="txn-drag-handle">⋮⋮</div>
+          <div class="txn-icon" style="background:#2d1a1a;">🍜</div>
+          <div class="txn-info">
+            <div class="txn-name">Doodoo Noodles</div>
+            <div class="txn-date">Вчера, 20:15</div>
+          </div>
+          <div class="txn-amount">-8 900 ₸</div>
+          <div class="txn-cat-badge" style="background:#2d1a1a;color:#fbbf24;">Кафе</div>
+        </div>
+
+        <div class="txn-item" data-amount="3500" data-cat-color="#c084fc" data-id="t4">
+          <div class="txn-drag-handle">⋮⋮</div>
+          <div class="txn-icon" style="background:#1f1a2d;">🎮</div>
+          <div class="txn-info">
+            <div class="txn-name">PlayStation Store</div>
+            <div class="txn-date">Вчера, 18:44</div>
+          </div>
+          <div class="txn-amount">-3 500 ₸</div>
+          <div class="txn-cat-badge" style="background:#1f1a2d;color:#c084fc;">Развлечения</div>
+        </div>
+
+        <div class="txn-item" data-amount="12000" data-cat-color="#34d399" data-id="t5">
+          <div class="txn-drag-handle">⋮⋮</div>
+          <div class="txn-icon" style="background:#1a2d25;">💊</div>
+          <div class="txn-info">
+            <div class="txn-name">Аптека Europharma</div>
+            <div class="txn-date">13 мая</div>
+          </div>
+          <div class="txn-amount">-12 000 ₸</div>
+          <div class="txn-cat-badge" style="background:#1a2d25;color:#34d399;">Здоровье</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Bottom nav -->
+    <div class="bottom-nav">
+      <div class="nav-item" onclick="setNav(this)">
+        <svg viewBox="0 0 24 24"><path d="M3 12L12 3l9 9M5 10v10h4v-6h6v6h4V10" stroke="#7b7b9d" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>Главная</span>
+      </div>
+      <div class="nav-item active" onclick="setNav(this)">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1" fill="#a78bfa"/><rect x="14" y="3" width="7" height="7" rx="1" fill="#a78bfa"/><rect x="3" y="14" width="7" height="7" rx="1" fill="#a78bfa"/><rect x="14" y="14" width="7" height="7" rx="1" fill="#a78bfa"/></svg>
+        <span>Планы</span>
+      </div>
+      <div class="nav-add">
+        <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></svg>
+      </div>
+      <div class="nav-item" onclick="setNav(this)">
+        <svg viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6" stroke="#7b7b9d" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>
+        <span>Статистика</span>
+      </div>
+      <div class="nav-item" onclick="setNav(this)">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" stroke="#7b7b9d" stroke-width="1.8" fill="none"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="#7b7b9d" stroke-width="1.8" fill="none" stroke-linecap="round"/></svg>
+        <span>Профиль</span>
+      </div>
+    </div>
+
+  </div><!-- /screen -->
+</div><!-- /phone-frame -->
+
+<!-- ══════════════════════════════ ANNOTATIONS ══════════════════════════════ -->
+<div class="annotations">
+  <div class="screen-label">Интерактивный прототип</div>
+  <div class="anno-title">CoinKeeper</div>
+  <div class="anno-sub">Управление личными финансами в тенге — карты, бюджеты, drag & drop</div>
+
+  <div class="anno-section">
+    <h3>Как пользоваться прототипом</h3>
+    <div class="interaction-card">
+      <div class="int-num">1</div>
+      <div class="int-text">
+        <h4>Карты и баланс</h4>
+        <p>Листай карты горизонтально. Баланс обновляется в заголовке при изменении трат.</p>
+      </div>
+    </div>
+    <div class="interaction-card">
+      <div class="int-num">2</div>
+      <div class="int-text">
+        <h4>Категории-бюджеты</h4>
+        <p>Каждая категория показывает потраченную сумму и лимит. Прогресс-бар меняется при назначении транзакций.</p>
+      </div>
+    </div>
+    <div class="interaction-card">
+      <div class="int-num">3</div>
+      <div class="int-text">
+        <h4>Drag & Drop 🎯</h4>
+        <p>Зажми транзакцию снизу и перетащи на нужную категорию — сумма прибавится к потраченному.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="anno-section">
+    <h3>Цветовая схема</h3>
+    <div class="color-chips">
+      <div class="chip"><div class="chip-dot" style="background:#7c3aed;"></div><span>Accent</span></div>
+      <div class="chip"><div class="chip-dot" style="background:#13131f;"></div><span>BG</span></div>
+      <div class="chip"><div class="chip-dot" style="background:#1a1a2e;"></div><span>Card</span></div>
+      <div class="chip"><div class="chip-dot" style="background:#4ade80;"></div><span>Good</span></div>
+      <div class="chip"><div class="chip-dot" style="background:#fbbf24;"></div><span>Warn</span></div>
+      <div class="chip"><div class="chip-dot" style="background:#ff6b8a;"></div><span>Spent</span></div>
+    </div>
+  </div>
+
+  <div class="anno-section">
+    <h3>Ключевые экраны</h3>
+    <div class="anno-item">
+      <div class="anno-dot"></div>
+      <p><strong>Карты</strong> — горизонтальный скролл с балансами по каждому банку и наличным</p>
+    </div>
+    <div class="anno-item">
+      <div class="anno-dot"></div>
+      <p><strong>Планы по месяцам</strong> — переключатель месяца, прогресс-бары с лимитами</p>
+    </div>
+    <div class="anno-item">
+      <div class="anno-dot"></div>
+      <p><strong>Нераспределённые транзакции</strong> — список трат без категории, drag & drop</p>
+    </div>
+    <div class="anno-item">
+      <div class="anno-dot"></div>
+      <p><strong>Добавить карту</strong> — кнопка «+» в конце карусели открывает форму</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════ Ghost / Toast ══════════════════════════ -->
+<div id="drag-ghost" style="display:none;"></div>
+<div id="toast"></div>
+
+<script>
+// ── Data ──────────────────────────────────────────
+const catData = {
+  food:          { spent: 52300, limit: 80000 },
+  transport:     { spent: 18500, limit: 30000 },
+  cafe:          { spent: 21000, limit: 25000 },
+  entertainment: { spent:  6000, limit: 20000 },
+  health:        { spent:     0, limit: 15000 },
+};
+
+const catMap = {
+  food:          { name: 'Продукты',        emoji: '🥗' },
+  transport:     { name: 'Транспорт',       emoji: '🚌' },
+  cafe:          { name: 'Кафе',            emoji: '☕' },
+  entertainment: { name: 'Развлечения',     emoji: '🎬' },
+  health:        { name: 'Здоровье',        emoji: '💊' },
+};
+
+// txn → category mapping heuristic (for ghost label)
+const txnCatHint = {
+  t1: 'food', t2: 'transport', t3: 'cafe', t4: 'entertainment', t5: 'health'
+};
+
+// ── UI helpers ─────────────────────────────────────
+function fmt(n) {
+  return n.toLocaleString('ru-RU') + ' ₸';
+}
+
+function updateCategory(cat) {
+  const d = catData[cat];
+  const pct = Math.min(100, Math.round(d.spent / d.limit * 100));
+  document.getElementById('spent-' + cat).textContent = fmt(d.spent);
+
+  const fill = document.getElementById('fill-' + cat);
+  fill.style.width = pct + '%';
+
+  // Color shifts
+  if (pct >= 90) fill.style.background = 'linear-gradient(90deg,#f87171,#ef4444)';
+  else if (pct >= 70) fill.style.background = fill.style.background; // keep original
+
+  // Update total spent
+  let total = 0;
+  Object.values(catData).forEach(v => total += v.spent);
+  document.getElementById('spentTotal').textContent = fmt(total);
+}
+
+// ── Drag & Drop ────────────────────────────────────
+let draggingEl = null;
+let ghostEl    = document.getElementById('drag-ghost');
+let offsetX = 0, offsetY = 0;
+
+document.querySelectorAll('.txn-item').forEach(item => {
+  item.addEventListener('mousedown', dragStart);
+  item.addEventListener('touchstart', dragStart, { passive: false });
+});
+
+function dragStart(e) {
+  if (e.target.closest('.txn-item').classList.contains('assigned')) return;
+
+  draggingEl = e.currentTarget;
+  draggingEl.classList.add('dragging');
+
+  const rect = draggingEl.getBoundingClientRect();
+  const cx = e.clientX ?? e.touches[0].clientX;
+  const cy = e.clientY ?? e.touches[0].clientY;
+  offsetX = cx - rect.left;
+  offsetY = cy - rect.top;
+
+  // Build ghost
+  const id   = draggingEl.dataset.id;
+  const name = draggingEl.querySelector('.txn-name').textContent;
+  const amt  = draggingEl.querySelector('.txn-amount').textContent;
+  const ico  = draggingEl.querySelector('.txn-icon').textContent;
+  const col  = draggingEl.dataset.catColor;
+
+  ghostEl.innerHTML = `
+    <div style="font-size:20px;">${ico}</div>
+    <div style="flex:1;min-width:0;">
+      <div style="font-size:13px;font-weight:700;color:#e0e0f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${name}</div>
+    </div>
+    <div style="font-size:14px;font-weight:800;color:${col};">${amt}</div>`;
+  ghostEl.style.display = 'flex';
+  ghostEl.style.left = (cx - offsetX) + 'px';
+  ghostEl.style.top  = (cy - offsetY) + 'px';
+
+  document.addEventListener('mousemove', dragMove);
+  document.addEventListener('mouseup',   dragEnd);
+  document.addEventListener('touchmove', dragMove, { passive: false });
+  document.addEventListener('touchend',  dragEnd);
+}
+
+function dragMove(e) {
+  if (!draggingEl) return;
+  e.preventDefault();
+  const cx = e.clientX ?? e.touches[0].clientX;
+  const cy = e.clientY ?? e.touches[0].clientY;
+
+  ghostEl.style.left = (cx - offsetX) + 'px';
+  ghostEl.style.top  = (cy - offsetY) + 'px';
+
+  // Highlight categories
+  document.querySelectorAll('.category-card').forEach(card => {
+    const r = card.getBoundingClientRect();
+    const inside = cx >= r.left && cx <= r.right && cy >= r.top && cy <= r.bottom;
+    card.classList.toggle('drop-over', inside);
+    card.classList.toggle('drop-target', !inside);
+  });
+}
+
+function dragEnd(e) {
+  if (!draggingEl) return;
+
+  const cx = e.clientX ?? (e.changedTouches?.[0]?.clientX) ?? 0;
+  const cy = e.clientY ?? (e.changedTouches?.[0]?.clientY) ?? 0;
+
+  let dropped = false;
+  document.querySelectorAll('.category-card').forEach(card => {
+    const r = card.getBoundingClientRect();
+    if (cx >= r.left && cx <= r.right && cy >= r.top && cy <= r.bottom) {
+      const cat    = card.dataset.cat;
+      const amount = parseInt(draggingEl.dataset.amount);
+      const color  = draggingEl.dataset.catColor;
+
+      catData[cat].spent += amount;
+      updateCategory(cat);
+
+      // Mark txn as assigned
+      draggingEl.classList.add('assigned');
+      draggingEl.querySelector('.txn-cat-badge').style.display = 'block';
+
+      showToast(`✓ Добавлено в «${catMap[cat].name}» — ${fmt(amount)}`);
+      dropped = true;
+
+      // Animate card flash
+      card.classList.add('drop-over');
+      setTimeout(() => card.classList.remove('drop-over'), 400);
+    }
+  });
+
+  if (!dropped) draggingEl.classList.remove('dragging');
+
+  // Cleanup
+  document.querySelectorAll('.category-card').forEach(c => {
+    c.classList.remove('drop-over', 'drop-target');
+  });
+
+  ghostEl.style.display = 'none';
+  draggingEl = null;
+
+  document.removeEventListener('mousemove', dragMove);
+  document.removeEventListener('mouseup',   dragEnd);
+  document.removeEventListener('touchmove', dragMove);
+  document.removeEventListener('touchend',  dragEnd);
+}
+
+// ── Toast ─────────────────────────────────────────
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+// ── Month nav ─────────────────────────────────────
+const months = ['Январь','Февраль','Март','Апрель','Май','Июнь',
+                 'Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+let curMonth = 4; // May (0-indexed)
+let curYear  = 2026;
+
+function changeMonth(d) {
+  curMonth += d;
+  if (curMonth < 0)  { curMonth = 11; curYear--; }
+  if (curMonth > 11) { curMonth = 0;  curYear++; }
+  document.getElementById('monthName').textContent = months[curMonth] + ' ' + curYear;
+}
+
+// ── Nav tabs ──────────────────────────────────────
+function showSection(tab) {
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    const tabs = ['txn','plans','stats'];
+    t.classList.toggle('active', tabs[i] === tab);
+  });
+}
+function setNav(el) {
+  document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// ── Add card ──────────────────────────────────────
+document.getElementById('addCardBtn').addEventListener('click', () => {
+  showToast('💳 Форма добавления карты');
+});
+
+// ── Init ──────────────────────────────────────────
+Object.keys(catData).forEach(updateCategory);
+</script>
+</body>
+</html>
